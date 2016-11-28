@@ -1,0 +1,31 @@
+version: '2'
+services:
+  db:
+    image: mariadb:10
+    ports:
+      - "3306:3306"
+    restart: always
+    environment:
+      - MYSQL_DATABASE=bolt
+      - MYSQL_USER=user
+      - MYSQL_PASSWORD=pass
+      - MYSQL_RANDOM_ROOT_PASSWORD=yes
+    volumes:
+      - /mnt/t2/mysql:/var/lib/mysql
+  web:
+    image: php:7-apache
+    ports:
+      - "80:80"
+    restart: always
+    environment:
+      - MYSQL_HOST=db
+      - MYSQL_DATABASE=bolt
+      - MYSQL_USER=user
+      - MYSQL_PASSWORD=pass
+    links:
+      - db
+      - cache
+  cache:
+    image: memcached:1
+  gnupg:
+    build: gnupg
