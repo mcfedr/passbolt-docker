@@ -6,4 +6,6 @@ RUN apt-get update \
     && apt-get autoremove -y \
     && apt-get clean all
 
-CMD [ "gpg" ]
+ADD generate_gpg_server_key.sh /srv
+ADD gpg_server_key_settings.conf /srv
+CMD [ "/srv/generate_gpg_server_key.sh" ]

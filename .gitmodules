@@ -1,0 +1,3 @@
+[submodule "web/passbolt_api"]
+	path = web/passbolt_api
+	url = https://github.com/passbolt/passbolt_api

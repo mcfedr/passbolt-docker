@@ -14,6 +14,7 @@ RUN apt-get update && apt-get install -y \
         libpng12-dev \
         libgpgme11-dev \
         curl \
+        mariadb-client \
    && apt-get autoremove -y \
    && apt-get clean all
 
@@ -40,7 +41,7 @@ RUN curl -L -o /tmp/memcached.tar.gz https://github.com/php-memcached-dev/php-me
     ) \
     && rm -r memcached \
     && docker-php-ext-enable memcached
-		
+
 RUN pecl install -o -f gnupg \
     && rm -rf /tmp/pear
 RUN docker-php-ext-enable gnupg
@@ -48,8 +49,18 @@ RUN docker-php-ext-enable gnupg
 RUN echo "date.timezone=UTC" > /usr/local/etc/php/conf.d/timezone.ini
 RUN echo "memory_limit=512M" > /usr/local/etc/php/conf.d/memory.ini
 
-RUN curl -sS https://getcomposer.org/installer | php
-RUN mv composer.phar /usr/local/bin/composer
+ADD passbolt_api /srv/passbolt_api
 
-RUN mkdir -p /opt/workspace
-WORKDIR /opt/workspace
+ADD app.php /srv/passbolt_api/app/Config/app.php
+ADD core.php /srv/passbolt_api/app/Config/core.php
+ADD database.php /srv/passbolt_api/app/Config/database.php
+ADD email.php /srv/passbolt_api/app/Config/email.php
+
+RUN chown -R www-data /srv/passbolt_api
+RUN chmod +w -R /srv/passbolt_api/app/tmp \
+    && chmod +w /srv/passbolt_api/app/webroot/img/public
+
+ADD passbolt.conf /etc/apache2/sites-enabled
+RUN a2dissite 000-default.conf \
+    && a2enmod rewrite \
+    && a2enmod headers

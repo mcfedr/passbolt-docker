@@ -1,0 +1,10 @@
+version: '2'
+services:
+  keygen:
+    build: keygen
+    environment:
+      - GNUPGHOME=/srv/keys/.gnupg
+    volumes:
+      - keys:/srv/keys
+volumes:
+  keys: {}

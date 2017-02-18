@@ -3,7 +3,7 @@ services:
   db:
     image: mariadb:10
     ports:
-      - "3306:3306"
+      - "3307:3306"
     restart: always
     environment:
       - MYSQL_DATABASE=bolt
@@ -11,21 +11,34 @@ services:
       - MYSQL_PASSWORD=pass
       - MYSQL_RANDOM_ROOT_PASSWORD=yes
     volumes:
-      - /mnt/t2/mysql:/var/lib/mysql
+      - db:/var/lib/mysql
   web:
-    image: php:7-apache
+    build: web
     ports:
-      - "80:80"
+      - "8099:80"
     restart: always
     environment:
       - MYSQL_HOST=db
       - MYSQL_DATABASE=bolt
       - MYSQL_USER=user
       - MYSQL_PASSWORD=pass
+      - PASSBOLT_SECURITY_SALT=salt
+      - PASSBOLT_SECURITY_SEED=1234
+      - GNUPGHOME=/srv/keys/.gnupg
+      - SMTP_HOST=mail.com
+      - SMTP_PORT=537
+      - SMTP_USER=user
+      - SMTP_PASSWORD=pass
+      - SMTP_FROM='contact@passbolt.com'
+      - SMTP_FROM_NAME='Passbolt'
     links:
       - db
       - cache
+    volumes:
+      - keys:/srv/keys
   cache:
     image: memcached:1
-  gnupg:
-    build: gnupg
+    restart: always
+volumes:
+  keys: {}
+  db: {}
