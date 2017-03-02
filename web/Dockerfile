@@ -1,4 +1,4 @@
-FROM php:7-apache
+FROM php:7-fpm
 
 MAINTAINER Fred Cox "mcfedr@gmail.com"
 
@@ -59,8 +59,3 @@ ADD email.php /srv/passbolt_api/app/Config/email.php
 RUN chown -R www-data /srv/passbolt_api
 RUN chmod +w -R /srv/passbolt_api/app/tmp \
     && chmod +w /srv/passbolt_api/app/webroot/img/public
-
-ADD passbolt.conf /etc/apache2/sites-enabled
-RUN a2dissite 000-default.conf \
-    && a2enmod rewrite \
-    && a2enmod headers
