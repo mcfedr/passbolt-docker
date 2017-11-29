@@ -1,55 +1,32 @@
 version: '2'
 services:
-  web:
-    build: web
-    restart: always
+  passbolt:
+    image: passbolt/passbolt
+    restart: unless-stopped
     environment:
-      - MYSQL_HOST=db
-      - MYSQL_DATABASE=bolt
-      - MYSQL_USER=user
-      - MYSQL_PASSWORD=pass
-      - PASSBOLT_SECURITY_SALT=salt
-      - PASSBOLT_SECURITY_SEED=1234
-      - GNUPGHOME=/srv/keys/.gnupg
-      - SMTP_HOST=mail.com
-      - SMTP_PORT=537
-      - SMTP_USER=user
-      - SMTP_PASSWORD=pass
-      - SMTP_FROM='contact@passbolt.com'
-      - SMTP_FROM_NAME='Passbolt'
+      - DB_HOST=db
+      - DB_PASS=P4ssb0lt
+      - DB_USER=passbolt
+      - DB_NAME=passbolt
     links:
       - db
-      - cache
     volumes:
-      - keys:/srv/keys
-  nginx:
-    build: nginx
-    restart: always
+      - ./scripts/wait-for-it.sh:/usr/bin/wait-for-it.sh
+      - ./data/passbolt/gpg_keys:/var/www/passbolt/app/Config/gpg
+      - ./data/passbolt/certificates:/etc/ssl/certs
+      - ./data/passbolt/images:/var/www/passbolt/app/webroot/img/public/images
+    command: ["/usr/bin/wait-for-it.sh", "db:3306", "-t", "0", "--", "/docker-entrypoint.sh"]
     ports:
-      - "8080:80"
-      - "8443:443"
-    links:
-      - web
-    volumes:
-      - letsencrypt-conf:/etc/letsencrypt
-      - letsencrypt-data:/var/www/letsencrypt
+      - 8080:80
+      - 8443:443
+
   db:
     image: mariadb:10
-    ports:
-      - "3307:3306"
-    restart: always
+    restart: unless-stopped
     environment:
-      - MYSQL_DATABASE=bolt
-      - MYSQL_USER=user
-      - MYSQL_PASSWORD=pass
+      - MYSQL_DATABASE=passbolt
+      - MYSQL_USER=passbolt
+      - MYSQL_PASSWORD=P4ssb0lt
       - MYSQL_RANDOM_ROOT_PASSWORD=yes
     volumes:
-      - db:/var/lib/mysql
-  cache:
-    image: memcached:1
-    restart: always
-volumes:
-  keys: {}
-  db: {}
-  letsencrypt-conf: {}
-  letsencrypt-data: {}
+      - ./data/mysql:/var/lib/mysql
